@@ -3,14 +3,14 @@ import("stdfaust.lib");
 
 //// params
 // amp
-amp_drive = hslider("[0]Amp drive", 5, 0.01, 100, 0.01) : si.smoo;
+amp_drive = hslider("[0]Amp drive", 0.1, 0, 1, 0.01) : si.smoo;
 // crossover
 xver_freq = hslider("[1]Crossover freq (Hz)", 800, 200, 8000, 0.01) : si.smoo;
 // bass
-bass_speed = hslider("[00]Bass speed (RPM)", 30, 5, 300, 0.01) : si.smoo;
+bass_speed = hslider("[00]Bass speed (RPM)", 30, 5, 500, 0.01) : si.smoo;
 bass_am_depth = hslider("[1]Bass AM depth", 1, 0, 10, 0.01) : si.smoo;
 // treble
-treble_speed = hslider("[00]Treble speed (RPM)", 50, 5, 500, 0.01) : si.smoo;
+treble_speed = hslider("[00]Treble speed (RPM)", 35, 5, 500, 0.01) : si.smoo;
 treble_radius = hslider("[1]Treble radius (cm)", 19, 5, 30, 0.01) : si.smoo;
 treble_mics = hslider("[2]Mics distance (deg)", 90, 0, 180, 0.01) : si.smoo;
 treble_am_depth = hslider("[3]Treble AM depth", 1, 0, 10, 0.01) : si.smoo;
@@ -26,7 +26,7 @@ treble_mix = hslider("[999]Treble mix (%)", 100, 0, 100, 0.01) : si.smoo;
 // phasor
 rotation(bpm) = os.lf_saw(bpm / 60) : *(ma.PI);
 // tube amplifier
-amplifier(g) = 1/(atan(g))*(atan(_ * g));
+amplifier(g) = ef.cubicnl_nodc(g, 0.1);
 // passive crossover
 crossover(fc) = _ <: high,low
 with {
@@ -40,15 +40,9 @@ with {
 	y_dist = radius + radius*sin(theta);
 };
 // doppler simulation based on delay lines
-doppler(radius, theta) =  looper
+doppler(radius, theta) = de.fdelay(10000, distance_hat)
 with {
-  len = 48000;
-  looper = rwtable(len, 0.0, w_idx, _, r_idx)
-  with {
-    distance_hat = distance(radius, theta) : /(343) : *(ma.SR);
-    w_idx = _~+(1) : %(len) : int;
-    r_idx = _~+(1) : +(len-distance_hat) : %(len) : int;
-  };
+  distance_hat = distance(radius, theta) : /(100)  : /(343) : *(ma.SR);
 };
 // amplitude modulation
 am(radius, theta, depth) = *(gain)

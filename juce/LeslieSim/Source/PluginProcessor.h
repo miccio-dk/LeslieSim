@@ -11,7 +11,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "DspFaust.h"
+#include "Dsp.h"
 
 //==============================================================================
 /**
@@ -71,7 +71,12 @@ public:
     void setHornFreq(float x);
 
   private:
-    DspFaust dspFaust;
+    Dsp dspFaust;
+    MapUI dspControl;
+
+    int blockSize, nChans;
+    double currentSampleRate;
+    float **audioBuffer;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LeslieSimAudioProcessor)

@@ -264,7 +264,7 @@ PluginGUI::PluginGUI (LeslieSimAudioProcessor& p)
 
     sld_horn_radius.reset (new Slider ("horn radius"));
     addAndMakeVisible (sld_horn_radius.get());
-    sld_horn_radius->setRange (5, 30, 0);
+    sld_horn_radius->setRange (5, 70, 0);
     sld_horn_radius->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sld_horn_radius->setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
     sld_horn_radius->addListener (this);
@@ -274,7 +274,7 @@ PluginGUI::PluginGUI (LeslieSimAudioProcessor& p)
 
     //[UserPreSize]
     // add suffixes
-    sld_drive->setTextValueSuffix("");
+    sld_drive->setTextValueSuffix(" %");
     sld_xver->setTextValueSuffix(" Hz");
     sld_bass_speed->setTextValueSuffix(" RPM");
     sld_bass_am->setTextValueSuffix("");
@@ -288,13 +288,13 @@ PluginGUI::PluginGUI (LeslieSimAudioProcessor& p)
     sld_horn_radius->setTextValueSuffix(" cm");
     sld_horn_freq->setTextValueSuffix(" Hz");
     // skew factors
-    sld_drive->setSkewFactorFromMidPoint(10);
     sld_xver->setSkewFactorFromMidPoint(1500);
+    sld_horn_radius->setSkewFactor(0.5);
     sld_bass_speed->setSkewFactor(0.6);
     sld_treble_speed->setSkewFactor(0.6);
     sld_treble_lpf_freq->setSkewFactorFromMidPoint(2500);
     // trim decimal places
-    sld_drive->setNumDecimalPlacesToDisplay(1);
+    sld_drive->setNumDecimalPlacesToDisplay(0);
     sld_xver->setNumDecimalPlacesToDisplay(1);
     sld_bass_speed->setNumDecimalPlacesToDisplay(1);
     sld_bass_am->setNumDecimalPlacesToDisplay(1);
@@ -308,7 +308,7 @@ PluginGUI::PluginGUI (LeslieSimAudioProcessor& p)
     sld_horn_radius->setNumDecimalPlacesToDisplay(1);
     sld_horn_freq->setNumDecimalPlacesToDisplay(0);
     // set to default value
-    sld_drive->setValue(1);
+    sld_drive->setValue(25);
     sld_xver->setValue(800);
     sld_bass_speed->setValue(40);
     sld_bass_am->setValue(5);
@@ -746,7 +746,7 @@ BEGIN_JUCER_METADATA
           needsCallback="1"/>
   <SLIDER name="horn radius" id="358882dcb76e224f" memberName="sld_horn_radius"
           virtualName="" explicitFocusOrder="0" pos="16 16 64 80" posRelativeX="eb13afa19b5093b3"
-          posRelativeY="eb13afa19b5093b3" min="5.0" max="30.0" int="0.0"
+          posRelativeY="eb13afa19b5093b3" min="5.0" max="70.0" int="0.0"
           style="RotaryHorizontalVerticalDrag" textBoxPos="TextBoxBelow"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>

@@ -24,18 +24,15 @@ LeslieSimAudioProcessor::LeslieSimAudioProcessor()
       )
 #endif
 {
-    bool res = dspFaust.start();
-
-    if(res) {
-        std::cout << "success!" << std::endl;
-    } else {
-        std::cout << "fail!" << std::endl;
-    }
+    // add something to ctor?
+    nChans = 2;
+    audioBuffer = new float *[nChans];
 }
 
 LeslieSimAudioProcessor::~LeslieSimAudioProcessor()
 {
-    dspFaust.stop();
+    // add something to destructor?
+    delete[] audioBuffer;
 }
 
 //==============================================================================
@@ -105,6 +102,14 @@ void LeslieSimAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlo
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    blockSize = samplesPerBlock;
+    dspFaust.init(sampleRate);
+    dspFaust.buildUserInterface(&dspControl);
+
+    for (int i = 0; i < dspControl.getParamsCount(); i++)
+    {
+        std::cout << dspControl.getParamAddress(i) << "\n";
+    }
 }
 
 void LeslieSimAudioProcessor::releaseResources()
@@ -138,7 +143,19 @@ bool LeslieSimAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts)
 
 void LeslieSimAudioProcessor::processBlock(AudioBuffer<float> &buffer, MidiBuffer &midiMessages)
 {
-    // empty block; processing occurs in FAUST!
+    AudioSourceChannelInfo bufferToFill;
+    bufferToFill.buffer = &buffer;
+    bufferToFill.startSample = 0;
+    bufferToFill.numSamples = buffer.getNumSamples();
+
+
+    for (int i = 0; i < nChans; i++)
+    {
+        audioBuffer[i] = bufferToFill.buffer->getWritePointer(i, bufferToFill.startSample);
+    }
+    // any processing before going to "reverb" could be done here in a dedicated buffer loop
+
+    dspFaust.compute(blockSize, audioBuffer, audioBuffer); // computing one block with Faust
 }
 
 //==============================================================================
@@ -167,19 +184,19 @@ void LeslieSimAudioProcessor::setStateInformation(const void *data, int sizeInBy
 }
 
 //==============================================================================
-void LeslieSimAudioProcessor::setAmpDrive(float x) { dspFaust.setParamValue("/leslie/Amp_drive", x); }
-void LeslieSimAudioProcessor::setXverFreq(float x) { dspFaust.setParamValue("/leslie/Crossover_freq_(Hz)", x); }
-void LeslieSimAudioProcessor::setBassSpeed(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Bass_channel/Bass_speed_(RPM)", x); }
-void LeslieSimAudioProcessor::setBassAmDepth(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Bass_channel/Bass_AM_depth", x); }
-void LeslieSimAudioProcessor::setBassMix(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Bass_channel/Bass_mix_(%)", x); }
-void LeslieSimAudioProcessor::setTrebleSpeed(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_speed_(RPM)", x); }
-void LeslieSimAudioProcessor::setTrebleAmDepth(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_AM_depth", x); }
-void LeslieSimAudioProcessor::setTrebleMix(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_mix_(%)", x); }
-void LeslieSimAudioProcessor::setTrebleMics(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Mics_distance_(deg)", x); }
-void LeslieSimAudioProcessor::setTrebleLpfFreq(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_LPF_center_freq_(Hz)", x); }
-void LeslieSimAudioProcessor::setTrebleLpfDepth(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_LPF_depth_(oct.)", x); }
-void LeslieSimAudioProcessor::setHornRadius(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_radius_(cm)", x); }
-void LeslieSimAudioProcessor::setHornFreq(float x) { dspFaust.setParamValue("/leslie/Signal_channels/Treble_channels/Horn_resonance_freq_(Hz)", x); }
+void LeslieSimAudioProcessor::setAmpDrive(float x) { dspControl.setParamValue("/leslie/Amp_drive", x); }
+void LeslieSimAudioProcessor::setXverFreq(float x) { dspControl.setParamValue("/leslie/Crossover_freq_(Hz)", x); }
+void LeslieSimAudioProcessor::setBassSpeed(float x) { dspControl.setParamValue("/leslie/Signal_channels/Bass_channel/Bass_speed_(RPM)", x); }
+void LeslieSimAudioProcessor::setBassAmDepth(float x) { dspControl.setParamValue("/leslie/Signal_channels/Bass_channel/Bass_AM_depth", x); }
+void LeslieSimAudioProcessor::setBassMix(float x) { dspControl.setParamValue("/leslie/Signal_channels/Bass_channel/Bass_mix_(%)", x); }
+void LeslieSimAudioProcessor::setTrebleSpeed(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_speed_(RPM)", x); }
+void LeslieSimAudioProcessor::setTrebleAmDepth(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_AM_depth", x); }
+void LeslieSimAudioProcessor::setTrebleMix(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_mix_(%)", x); }
+void LeslieSimAudioProcessor::setTrebleMics(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Mics_distance_(deg)", x); }
+void LeslieSimAudioProcessor::setTrebleLpfFreq(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_LPF_center_freq_(Hz)", x); }
+void LeslieSimAudioProcessor::setTrebleLpfDepth(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_LPF_depth_(oct.)", x); }
+void LeslieSimAudioProcessor::setHornRadius(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Treble_radius_(cm)", x); }
+void LeslieSimAudioProcessor::setHornFreq(float x) { dspControl.setParamValue("/leslie/Signal_channels/Treble_channels/Horn_resonance_freq_(Hz)", x); }
 
 //==============================================================================
 // This creates new instances of the plugin..
